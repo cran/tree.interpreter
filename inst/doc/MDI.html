@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Calculating MDI and MDI-oob with tree.interpreter</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Calculating MDI and MDI-oob with tree.interpreter</h1>
+
+
+
+<p>The R package <strong>tree.interpreter</strong> at its core implements the interpretation algorithm proposed by <span class="citation">(Saabas 2014)</span> for popular RF packages such as <strong>randomForest</strong> and <strong>ranger</strong>. This vignette illustrates how to calculate the MDI, a.k.a Mean Decrease Impurity, and MDI-oob, a debiased MDI feature importance measure proposed by <span class="citation">(Li et al. 2019)</span>, with it.</p>
+<p>If you use this package for data analysis, please consider citing it with <code>citation(&#39;tree.interpreter&#39;)</code>.</p>
+<div id="saabass-prediction-interpretation-algorithm" class="section level2">
+<h2>Saabas’s Prediction Interpretation Algorithm</h2>
+<p>Let’s start with the interpretation algorithm by <span class="citation">(Saabas 2014)</span>. The idea is to decompose the prediction for a specific sample by looking at the decision rule associated with it.</p>
+<p>Define for a tree <span class="math inline">\(T\)</span>, a feature <span class="math inline">\(k\)</span>, and a sample <span class="math inline">\(X\)</span>, the function <span class="math inline">\(f_{T, k}(X)\)</span> to be</p>
+<p><span class="math display">\[
+f_{T, k}(X) = \sum_{t \in I(T): v(t)=k} \left\{ \mu_n (t^{\text{left}}) \mathbb{1} \left(X \in R_{t^{\text{left}}}\right) + \mu_n (t^{\text{right}}) \mathbb{1} \left(X \in R_{t^{\text{right}}}\right) - \mu_n (t) \mathbb{1} \left(X \in R_t\right) \right\},
+\]</span></p>
+<p>where <span class="math inline">\(I(T)\)</span> is inner nodes of the tree <span class="math inline">\(T\)</span>, <span class="math inline">\(v(t)\)</span> is the feature on which the node <span class="math inline">\(t\)</span> is split on, <span class="math inline">\(R(t)\)</span> is the hyper-rectangle in the feature space “occupied” by the node <span class="math inline">\(t\)</span>, <span class="math inline">\(\mu_n(t)\)</span> is the average response of samples falling into <span class="math inline">\(R(t)\)</span>, and <span class="math inline">\(\mathbb{1}\)</span> is the indicator function. This is calculated by the function <code>tree.interpreter::featureContribTree</code>.</p>
+<p>Intuitively, it calculates the lagged differences of the responses for the nodes on the decision path of an individual sample, groupped by the feature on which the nodes are split on. Consequently, the sum of the response of the root node and <span class="math inline">\(\sum_{k} f_{T, k}(X)\)</span> is exactly the prediction of <span class="math inline">\(X\)</span> by <span class="math inline">\(T\)</span>.</p>
+<p>In order to move from a decision tree to a forest, define for a feature <span class="math inline">\(k\)</span> and a sample <span class="math inline">\(X\)</span> the function <span class="math inline">\(f_{k}(X)\)</span> to be</p>
+<p><span class="math display">\[
+f_{k}(X) = \frac{1}{n_{\text{tree}}} \sum_{s=1}^{n_{\text{tree}}} f_{T_s, k}(X),
+\]</span></p>
+<p>where the forest is represented by an ensemble of <span class="math inline">\(n_{\text{tree}}\)</span> trees <span class="math inline">\(T_1, \dots, T_{n_{\text{tree}}}\)</span>. This is sensible because (at least for regression trees) a forest makes prediction by averaging over the predictions of its trees, so all trees naturally have the same weight. It follows that the prediction of <span class="math inline">\(X\)</span> by the whole forest is exactly the sum of the average response of the root nodes in the forest and <span class="math inline">\(\sum_{k} f_{k}(X)\)</span>. This is calculated by the function <code>tree.interpreter::featureContrib</code>.</p>
+<p>Later, <span class="citation">(Saabas 2015)</span> released a Python library named <strong>treeinterpreter</strong> on PyPI, implementing this interpretation algorithm for random forest models by the RF library <strong>scikit-learn</strong>. This R package effectively serves as its R counterpart.</p>
+</div>
+<div id="mdi-in-f_t-kx" class="section level2">
+<h2>MDI in <span class="math inline">\(f_{T, k}(X)\)</span></h2>
+<p>Recently, <span class="citation">(Li et al. 2019)</span> have shown that for a tree <span class="math inline">\(T\)</span>, the MDI of the feature <span class="math inline">\(k\)</span> can be written as:</p>
+<p><span class="math display">\[
+\frac{1}{|\mathcal{D}^{(T)}|} \sum_{i \in \mathcal{D}^{(T)}} f_{T, k}(x_i) \cdot y_i.
+\]</span></p>
+<p>You can calculate the MDI for a tree with <code>tree.interpreter::MDITree</code>.</p>
+</div>
+<div id="mdi-oob-in-f_t-kx" class="section level2">
+<h2>MDI-oob in <span class="math inline">\(f_{T, k}(X)\)</span></h2>
+<p>They also proposed a debiased MDI feature importance measure using out-of-bag samples, called MDI-oob:</p>
+<p><span class="math display">\[
+\frac{1}{|\mathcal{D} \setminus \mathcal{D}^{(T)}|} \sum_{i \in \mathcal{D} \setminus \mathcal{D}^{(T)}} f_{T, k}(x_i) \cdot y_i.
+\]</span></p>
+<p>You can calculate the MDI-oob for a tree with <code>tree.interpreter::MDIoobTree</code>.</p>
+</div>
+<div id="mdi-and-mdi-oob-of-the-forest" class="section level2">
+<h2>MDI and MDI-oob of the forest</h2>
+<p>The MDI(-oob) of a forest is simply the average MDI(-oob) of all its trees. As remarked by <span class="citation">(Li et al. 2019)</span>, for classification trees, we must convert the factorial response to one-hot vectors.</p>
+<p>You can calculate the MDI and MDI-oob for a forest with <code>tree.interpreter::MDI</code> and <code>tree.interpreter::MDIoob</code>, respectively.</p>
+</div>
+<div id="examples" class="section level2">
+<h2>Examples</h2>
+<p>Below we present two examples to demonstrate how to calculate MDI and MDI-oob with <strong>tree.interpreter</strong> for regression and classification trees.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(MASS)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(ranger)</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">library</span>(tree.interpreter)</span></code></pre></div>
+<div id="regression" class="section level3">
+<h3>Regression</h3>
+<p>In the first example, we build a random forest on the Boston housing data set, and calculate the MDI/MDI-oob of each feature.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># Setup</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">set.seed</span>(42L)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>rfobj &lt;-<span class="st"> </span><span class="kw">ranger</span>(medv <span class="op">~</span><span class="st"> </span>., Boston, <span class="dt">keep.inbag =</span> <span class="ot">TRUE</span>, <span class="dt">importance =</span> <span class="st">&#39;impurity&#39;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4"></a>tidy.RF &lt;-<span class="st"> </span><span class="kw">tidyRF</span>(rfobj, Boston[, <span class="dv">-14</span>], Boston[, <span class="dv">14</span>])</span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="co"># MDI</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="kw">t</span>(Boston.MDI &lt;-<span class="st"> </span><span class="kw">MDI</span>(tidy.RF, Boston[, <span class="dv">-14</span>], Boston[, <span class="dv">14</span>]))</span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="co">#&gt;              crim        zn    indus      chas      nox       rm      age</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="co">#&gt; Response 5.548158 0.8654495 5.994296 0.7629885 6.150373 22.58931 2.472918</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="co">#&gt;               dis      rad      tax  ptratio    black    lstat</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="co">#&gt; Response 5.341668 1.216021 3.161971 5.879999 2.016383 20.33368</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="kw">all.equal</span>(<span class="kw">as.vector</span>(Boston.MDI),</span>
+<span id="cb2-13"><a href="#cb2-13"></a>          <span class="kw">as.vector</span>(<span class="kw">importance</span>(rfobj) <span class="op">/</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a><span class="st">                      </span><span class="kw">sum</span>(rfobj<span class="op">$</span>inbag.counts[[<span class="dv">1</span>]])))</span>
+<span id="cb2-15"><a href="#cb2-15"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a></span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="co"># MDI-oob</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a><span class="kw">t</span>(<span class="kw">MDIoob</span>(tidy.RF, Boston[, <span class="dv">-14</span>], Boston[, <span class="dv">14</span>]))</span>
+<span id="cb2-19"><a href="#cb2-19"></a><span class="co">#&gt;              crim        zn    indus      chas     nox       rm      age</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a><span class="co">#&gt; Response 3.705595 0.3182977 5.164021 0.2130767 5.33058 20.37384 0.828533</span></span>
+<span id="cb2-21"><a href="#cb2-21"></a><span class="co">#&gt;               dis       rad      tax  ptratio    black    lstat</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a><span class="co">#&gt; Response 2.011909 0.8592034 2.335839 5.216508 1.006074 18.63129</span></span></code></pre></div>
+</div>
+<div id="classification" class="section level3">
+<h3>Classification</h3>
+<p>In the second example, we build a random forest on Anderson’s iris data set, and calculate the MDI/MDI-oob of each feature.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Setup</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">set.seed</span>(42L)</span>
+<span id="cb3-3"><a href="#cb3-3"></a>rfobj &lt;-<span class="st"> </span><span class="kw">ranger</span>(Species <span class="op">~</span><span class="st"> </span>., iris, <span class="dt">keep.inbag =</span> <span class="ot">TRUE</span>, <span class="dt">importance =</span> <span class="st">&#39;impurity&#39;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4"></a>tidy.RF &lt;-<span class="st"> </span><span class="kw">tidyRF</span>(rfobj, iris[, <span class="dv">-5</span>], iris[, <span class="dv">5</span>])</span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co"># MDI</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>(iris.MDI &lt;-<span class="st"> </span><span class="kw">rowSums</span>(<span class="kw">MDI</span>(tidy.RF, iris[, <span class="dv">-5</span>], iris[, <span class="dv">5</span>])))</span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co">#&gt; Sepal.Length  Sepal.Width Petal.Length  Petal.Width </span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co">#&gt;   0.07087803   0.01553204   0.28527348   0.29021680</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="kw">all.equal</span>(<span class="kw">as.vector</span>(iris.MDI),</span>
+<span id="cb3-11"><a href="#cb3-11"></a>          <span class="kw">as.vector</span>(<span class="kw">importance</span>(rfobj) <span class="op">/</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="st">                      </span><span class="kw">sum</span>(rfobj<span class="op">$</span>inbag.counts[[<span class="dv">1</span>]])))</span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="co"># MDI-oob</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="kw">rowSums</span>(<span class="kw">MDIoob</span>(tidy.RF, iris[, <span class="dv">-5</span>], iris[, <span class="dv">5</span>]))</span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="co">#&gt; Sepal.Length  Sepal.Width Petal.Length  Petal.Width </span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="co">#&gt;  0.053957636  0.004549311  0.269162607  0.279850535</span></span></code></pre></div>
+</div>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-li_debiased_2019">
+<p>Li, Xiao, Yu Wang, Sumanta Basu, Karl Kumbier, and Bin Yu. 2019. “A Debiased MDI Feature Importance Measure for Random Forests.” <em>arXiv:1906.10845 [Cs, Stat]</em>, June. <a href="http://arxiv.org/abs/1906.10845">http://arxiv.org/abs/1906.10845</a>.</p>
+</div>
+<div id="ref-saabas_interpreting_2014">
+<p>Saabas, Ando. 2014. “Interpreting Random Forests.” <a href="https://blog.datadive.net/interpreting-random-forests/">https://blog.datadive.net/interpreting-random-forests/</a>.</p>
+</div>
+<div id="ref-saabas_random_2015">
+<p>———. 2015. “Random Forest Interpretation with Scikit-Learn.” <a href="https://blog.datadive.net/random-forest-interpretation-with-scikit-learn/">https://blog.datadive.net/random-forest-interpretation-with-scikit-learn/</a>.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
