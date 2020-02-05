@@ -1,15 +1,15 @@
-## ---- include = FALSE----------------------------------------------------
+## ---- include = FALSE---------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 
-## ----setup---------------------------------------------------------------
+## ----setup--------------------------------------------------------------------
 library(MASS)
 library(ranger)
 library(tree.interpreter)
 
-## ----reg-----------------------------------------------------------------
+## ----reg----------------------------------------------------------------------
 # Setup
 set.seed(42L)
 rfobj <- ranger(medv ~ ., Boston, keep.inbag = TRUE, importance = 'impurity')
@@ -24,7 +24,7 @@ all.equal(as.vector(Boston.MDI),
 # MDI-oob
 t(MDIoob(tidy.RF, Boston[, -14], Boston[, 14]))
 
-## ----class---------------------------------------------------------------
+## ----class--------------------------------------------------------------------
 # Setup
 set.seed(42L)
 rfobj <- ranger(Species ~ ., iris, keep.inbag = TRUE, importance = 'impurity')
